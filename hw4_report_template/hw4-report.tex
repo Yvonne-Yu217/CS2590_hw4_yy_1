@@ -128,7 +128,7 @@ batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation
   \midrule
   \multicolumn{4}{l}{\textbf{Dev Results}} \\
   \midrule
-  T5 fine-tuned (best epoch) & 2.36 & 63.73 & 67.28 \\
+  T5 fine-tuned (best epoch) & 1.93 & 70.17 & 73.81 \\
   \midrule
   \multicolumn{4}{l}{\textbf{Test Results}} \\
   \midrule
@@ -146,11 +146,11 @@ batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation
     \toprule
     \textbf{Error Type} & \textbf{Example} & \textbf{Description} & \textbf{Statistics} \\
     \midrule
-    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 104/466 (22.32\%) \\
+    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 64/466 (13.73\%) \\
     \midrule
-    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 169/466 (1$-$Record EM) \\
+    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 75/466 (16.09\%) \\
     \midrule
-    Structural mismatch & partial or over-constrained query & Correct table family but wrong aggregation, filter, or join structure leading to SQL mismatch. & 455/466 (1$-$SQL EM) \\
+    Structural mismatch & partial or over-constrained query & Correct table family but wrong aggregation, filter, or join structure leading to SQL mismatch. & 457/466 (1$-$SQL EM) \\
     \bottomrule
   \end{tabular}
   \caption{Representative error categories on the dev set.}
