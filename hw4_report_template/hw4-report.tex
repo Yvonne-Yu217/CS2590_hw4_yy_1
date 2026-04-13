@@ -29,10 +29,12 @@ On the full training/evaluation run, the original test accuracy is \textbf{0.933
 output file \texttt{out\_original.txt} is generated.
 
 \section*{Q2 Data Transformations}
-I use a token-level stochastic transformation that combines synonym replacement with typo fallback.
-For each alphabetic token, with probability $p=0.15$, I attempt to transform it. If WordNet provides
-valid synonyms different from the original form, I replace the token with a randomly chosen synonym.
-If no synonym is available and token length is greater than 1, I create a typo via adjacent character swap.
+I use a token-level stochastic transformation that combines synonym replacement with typo injection.
+For each alphabetic token, with probability $p=0.35$, I attempt to transform it. If WordNet provides
+valid synonyms different from the original form, I replace the token with a randomly chosen synonym
+(with 70\% probability); otherwise (or with 30\% probability even when synonyms exist), I inject a typo
+by randomly choosing one of three operations: adjacent character swap, keyboard-neighbor substitution,
+or character deletion (for tokens longer than 3 characters).
 Non-alphabetic tokens are left unchanged.
 
 This is a reasonable transformation because it simulates realistic user variation: paraphrasing and
@@ -50,8 +52,8 @@ without changing labels.
 
 \textbf{Analysis}
 \begin{itemize}
-  \item Performance on transformed data improved after augmentation: $0.92108 - 0.90840 = +0.01268$.
-  \item Performance on original data was nearly unchanged: $0.93432 - 0.93448 = -0.00016$.
+  \item Performance on transformed data improved after augmentation: $0.92096 - 0.91080 = +0.01016$.
+  \item Performance on original data was nearly unchanged: $0.93272 - 0.93316 = -0.00044$.
   \item Intuitively, augmentation teaches the model invariance to surface perturbations while preserving
   core sentiment cues.
   \item One limitation: this augmentation is lexical/local and does not address broader distribution shifts
@@ -83,9 +85,9 @@ Vocabulary size (SQL) & 555 & 395 \\
 \textbf{T5 fine-tuned model} & Train & Dev \\
 \midrule
 Model name & google-t5/t5-small & google-t5/t5-small \\
-Mean sentence length after prompt (T5 tokens) & 37.10 & 37.07 \\
+Mean sentence length after prompt (T5 tokens) & 23.10 & 23.07 \\
 Mean SQL query length (T5 tokens) & 216.37 & 210.05 \\
-Vocabulary size (natural language, prompted) & 802 & 476 \\
+Vocabulary size (natural language, prompted) & 796 & 470 \\
 Vocabulary size (SQL) & 555 & 395 \\
 \bottomrule
 \end{tabular}
@@ -102,7 +104,7 @@ Vocabulary size (SQL) & 555 & 395 \\
 \toprule
 Design choice & Description \\
 \midrule
-Data processing & Input prompt format: ``Translate the question to SQL. Question: <NL> SQL:''.
+Data processing & Input prompt format: ``translate English to SQL: <NL>''.
 Decoder targets are ground-truth SQL sequences plus EOS token. \\
 Tokenization & Default \texttt{google-t5/t5-small} tokenizer for both encoder and decoder.
 Dynamic padding in collate functions. \\
