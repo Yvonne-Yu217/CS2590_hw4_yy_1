@@ -1,0 +1,195 @@
+\documentclass{article}
+
+\input{header}
+
+\title{CSCI 2590: Assignment 4}
+\author{Yvonne Yu \\ yy5919 \\ \href{https://github.com/Yvonne-Yu217/CS2590_hw_3_yy}{https://github.com/Yvonne-Yu217/CS2590\_hw\_3\_yy}}
+\date{}
+
+\colmfinalcopy
+\begin{document}
+\maketitle
+
+\section*{Question Map}
+To make grading easier, this report is organized as:
+\begin{itemize}
+  \item \textbf{Part I}: Q1, Q2, Q3
+  \item \textbf{Part II}: Q4, Q5, Q6, Q7
+  \item \textbf{Submission requirements}: repository link, files checklist, and AI usage
+\end{itemize}
+
+\section*{Repository Link (Submission Requirement)}
+GitHub repository for both Part I and Part II:
+\href{https://github.com/Yvonne-Yu217/CS2590_hw_3_yy}{https://github.com/Yvonne-Yu217/CS2590\_hw\_3\_yy}
+
+\section*{Q1 Fine-tuning BERT Model}
+I implemented the missing training loop in \texttt{do\_train} (forward, loss backpropagation,
+optimizer step, scheduler step, gradient reset, and epoch loss reporting), then trained BERT on IMDB.
+On the full training/evaluation run, the original test accuracy is \textbf{0.93316}, and the required
+output file \texttt{out\_original.txt} is generated.
+
+\section*{Q2 Data Transformations}
+I use a token-level stochastic transformation that combines synonym replacement with typo fallback.
+For each alphabetic token, with probability $p=0.15$, I attempt to transform it. If WordNet provides
+valid synonyms different from the original form, I replace the token with a randomly chosen synonym.
+If no synonym is available and token length is greater than 1, I create a typo via adjacent character swap.
+Non-alphabetic tokens are left unchanged.
+
+This is a reasonable transformation because it simulates realistic user variation: paraphrasing and
+small typing mistakes. In most cases sentiment should be preserved, so it serves as an OOD robustness test
+without changing labels.
+
+\section*{Q3 Data Augmentation}
+\textbf{Accuracy results}
+\begin{itemize}
+  \item Base model on original test: 0.93316
+  \item Base model on transformed test: 0.91080
+  \item Augmented model on original test: 0.93272
+  \item Augmented model on transformed test: 0.92096
+\end{itemize}
+
+\textbf{Analysis}
+\begin{itemize}
+  \item Performance on transformed data improved after augmentation: $0.92108 - 0.90840 = +0.01268$.
+  \item Performance on original data was nearly unchanged: $0.93432 - 0.93448 = -0.00016$.
+  \item Intuitively, augmentation teaches the model invariance to surface perturbations while preserving
+  core sentiment cues.
+  \item One limitation: this augmentation is lexical/local and does not address broader distribution shifts
+  such as discourse changes, long-range syntax changes, or sarcasm.
+\end{itemize}
+
+\section*{Q4 Data Statistics and Processing}
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcc}
+\toprule
+Statistics Name & Train & Dev \\
+\midrule
+Number of examples & 4225 & 466 \\
+Mean sentence length (T5 tokens) & 18.10 & 18.07 \\
+Mean SQL query length (T5 tokens) & 216.37 & 210.05 \\
+Vocabulary size (natural language) & 792 & 466 \\
+Vocabulary size (SQL) & 555 & 395 \\
+\bottomrule
+\end{tabular}
+\caption{Data statistics before pre-processing.}
+\label{tab:data_stats_before}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{T5 fine-tuned model} & Train & Dev \\
+\midrule
+Model name & google-t5/t5-small & google-t5/t5-small \\
+Mean sentence length after prompt (T5 tokens) & 37.10 & 37.07 \\
+Mean SQL query length (T5 tokens) & 216.37 & 210.05 \\
+Vocabulary size (natural language, prompted) & 802 & 476 \\
+Vocabulary size (SQL) & 555 & 395 \\
+\bottomrule
+\end{tabular}
+\caption{Data statistics after pre-processing.}
+\label{tab:data_stats_after}
+\end{table}
+
+\newpage
+
+\section*{Q5 T5 Fine-tuning Details}
+\begin{table}[h!]
+\centering
+\begin{tabular}{p{3.5cm}p{10cm}}
+\toprule
+Design choice & Description \\
+\midrule
+Data processing & Input prompt format: ``Translate the question to SQL. Question: <NL> SQL:''.
+Decoder targets are ground-truth SQL sequences plus EOS token. \\
+Tokenization & Default \texttt{google-t5/t5-small} tokenizer for both encoder and decoder.
+Dynamic padding in collate functions. \\
+Architecture & Fine-tuned pretrained T5-small end-to-end (all parameters trainable). \\
+Hyperparameters & AdamW, learning rate $2\times10^{-5}$, linear scheduler, warmup epochs = 1,
+batch size = 16, test batch size = 16, max epochs = 4, patience = 2. Generation used beam search
+(num\_beams=4, max\_new\_tokens=256, deterministic decoding). \\
+\bottomrule
+\end{tabular}
+\caption{Best-performing fine-tuned T5 configuration.}
+\label{tab:t5_results_ft}
+\end{table}
+
+\section*{Q6 Results and Error Analysis}
+\paragraph{Quantitative Results}
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcc}
+  \toprule
+  System & Query EM & F1 score \\
+  \midrule
+  \multicolumn{3}{l}{\textbf{Dev Results}} \\
+  \midrule
+  T5 fine-tuned (v8 final, best epoch) & 27.47 & 45.13 \\
+  \midrule
+  \multicolumn{3}{l}{\textbf{Test Results}} \\
+  \midrule
+  T5 fine-tuned (hidden leaderboard) & \textit{Fill from Gradescope} & \textit{Fill from Gradescope} \\
+  \bottomrule
+\end{tabular}
+\caption{Development and test results.}
+\label{tab:results}
+\end{table}
+
+\paragraph{Qualitative Error Analysis}
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{p{2cm}p{3cm}p{5cm}p{3cm}}
+    \toprule
+    \textbf{Error Type} & \textbf{Example} & \textbf{Description} & \textbf{Statistics} \\
+    \midrule
+    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing execution failure. & 4/466 (best dev epoch) \\
+    \midrule
+    Wrong grounding & wrong city/airline/date values & Query is executable but entities/constants differ from the intent. & 289/466 (1-Record EM) \\
+    \midrule
+    Structural mismatch & partial or over-constrained query & Correct table family but wrong aggregation/filter structure. & 338/466 (1-SQL EM) \\
+    \bottomrule
+  \end{tabular}
+  \caption{Representative error categories on the dev set.}
+  \label{tab:qualitative}
+\end{table}
+
+\section*{Q7 Checkpoint Link}
+Google Drive link containing the model checkpoint used to generate Q7 outputs:
+\href{https://drive.google.com/drive/folders/1SdbFj9EizBOGY4g_wG2hFSvgeNt87vIM?usp=sharing}{\url{https://drive.google.com/drive/folders/1SdbFj9EizBOGY4g_wG2hFSvgeNt87vIM?usp=sharing}}
+
+\section*{Submission Files Checklist}
+\textbf{Part I (upload to Gradescope)}
+\begin{itemize}
+  \item out\_original.txt
+  \item out\_transformed.txt
+  \item out\_augmented\_original.txt
+  \item out\_augmented\_transformed.txt
+\end{itemize}
+
+\textbf{Part II (upload to Gradescope)}
+\begin{itemize}                                                                         
+  \item results/t5\_ft\_experiment\_test.sql
+  \item records/t5\_ft\_experiment\_test.pkl
+\end{itemize}
+
+\textbf{Report (upload to Gradescope)}
+\begin{itemize}
+  \item hw4-report.pdf
+\end{itemize}
+
+\textbf{Google Drive (do not upload to Gradescope)}
+\begin{itemize}
+  \item checkpoint archive used for Q7 outputs (e.g., v8\_final\_best\_checkpoint.tar.gz)
+\end{itemize}
+
+\section*{AI Usage}
+\noindent\textbf{1. AI Tools Used}\\
+ChatGPT/Copilot-style coding assistant.
+
+\noindent\textbf{2. How AI Was Used}\\
+Used for debugging environment/runtime issues, improving training/evaluation script reliability,
+and polishing report language. All final code/results were validated by running experiments.
+
+\end{document}
