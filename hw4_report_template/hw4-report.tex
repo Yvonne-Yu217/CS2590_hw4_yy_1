@@ -3,7 +3,7 @@
 \input{header}
 
 \title{CSCI 2590: Assignment 4}
-\author{Yvonne Yu \\ yy5919 \\ \href{https://github.com/Yvonne-Yu217/CS2590_hw_3_yy}{https://github.com/Yvonne-Yu217/CS2590\_hw\_3\_yy}}
+\author{Yvonne Yu \\ yy5919 \\ \href{https://github.com/Yvonne-Yu217/CS2590_hw4_yy_1}{https://github.com/Yvonne-Yu217/CS2590\_hw4\_yy\_1}}
 \date{}
 
 \colmfinalcopy
@@ -20,7 +20,7 @@ To make grading easier, this report is organized as:
 
 \section*{Repository Link (Submission Requirement)}
 GitHub repository for both Part I and Part II:
-\href{https://github.com/Yvonne-Yu217/CS2590_hw_3_yy}{https://github.com/Yvonne-Yu217/CS2590\_hw\_3\_yy}
+\href{https://github.com/Yvonne-Yu217/CS2590_hw4_yy_1}{https://github.com/Yvonne-Yu217/CS2590\_hw4\_yy\_1}
 
 \section*{Q1 Fine-tuning BERT Model}
 I implemented the missing training loop in \texttt{do\_train} (forward, loss backpropagation,
@@ -107,9 +107,9 @@ Decoder targets are ground-truth SQL sequences plus EOS token. \\
 Tokenization & Default \texttt{google-t5/t5-small} tokenizer for both encoder and decoder.
 Dynamic padding in collate functions. \\
 Architecture & Fine-tuned pretrained T5-small end-to-end (all parameters trainable). \\
-Hyperparameters & AdamW, learning rate $2\times10^{-5}$, linear scheduler, warmup epochs = 1,
-batch size = 16, test batch size = 16, max epochs = 4, patience = 2. Generation used beam search
-(num\_beams=4, max\_new\_tokens=256, deterministic decoding). \\
+Hyperparameters & AdamW, learning rate $3\times10^{-4}$, weight decay 0.01, cosine scheduler, warmup epochs = 2,
+batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation used beam search
+(num\_beams=4, max\_length=512, early\_stopping=True). \\
 \bottomrule
 \end{tabular}
 \caption{Best-performing fine-tuned T5 configuration.}
@@ -120,17 +120,17 @@ batch size = 16, test batch size = 16, max epochs = 4, patience = 2. Generation 
 \paragraph{Quantitative Results}
 \begin{table}[h!]
 \centering
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
   \toprule
-  System & Query EM & F1 score \\
+  System & Query EM & Record EM & Record F1 \\
   \midrule
-  \multicolumn{3}{l}{\textbf{Dev Results}} \\
+  \multicolumn{4}{l}{\textbf{Dev Results}} \\
   \midrule
-  T5 fine-tuned (v8 final, best epoch) & 27.47 & 45.13 \\
+  T5 fine-tuned (best epoch) & 2.36 & 63.73 & 67.28 \\
   \midrule
-  \multicolumn{3}{l}{\textbf{Test Results}} \\
+  \multicolumn{4}{l}{\textbf{Test Results}} \\
   \midrule
-  T5 fine-tuned (hidden leaderboard) & \textit{Fill from Gradescope} & \textit{Fill from Gradescope} \\
+  T5 fine-tuned (hidden leaderboard) & \textit{Gradescope} & \textit{Gradescope} & \textit{Gradescope} \\
   \bottomrule
 \end{tabular}
 \caption{Development and test results.}
@@ -144,11 +144,11 @@ batch size = 16, test batch size = 16, max epochs = 4, patience = 2. Generation 
     \toprule
     \textbf{Error Type} & \textbf{Example} & \textbf{Description} & \textbf{Statistics} \\
     \midrule
-    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing execution failure. & 4/466 (best dev epoch) \\
+    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 104/466 (22.32\%) \\
     \midrule
-    Wrong grounding & wrong city/airline/date values & Query is executable but entities/constants differ from the intent. & 289/466 (1-Record EM) \\
+    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 169/466 (1$-$Record EM) \\
     \midrule
-    Structural mismatch & partial or over-constrained query & Correct table family but wrong aggregation/filter structure. & 338/466 (1-SQL EM) \\
+    Structural mismatch & partial or over-constrained query & Correct table family but wrong aggregation, filter, or join structure leading to SQL mismatch. & 455/466 (1$-$SQL EM) \\
     \bottomrule
   \end{tabular}
   \caption{Representative error categories on the dev set.}
