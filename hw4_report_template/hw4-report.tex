@@ -122,17 +122,17 @@ batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation
 \paragraph{Quantitative Results}
 \begin{table}[h!]
 \centering
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
   \toprule
-  System & Query EM & Record EM & Record F1 \\
+  System & Query EM & F1 Score \\
   \midrule
-  \multicolumn{4}{l}{\textbf{Dev Results}} \\
+  \multicolumn{3}{l}{\textbf{Dev Results}} \\
   \midrule
-  T5 fine-tuned (best epoch) & 1.93 & 70.17 & 73.81 \\
+  T5 fine-tuned (best epoch) & 1.93 & 73.81 \\
   \midrule
-  \multicolumn{4}{l}{\textbf{Test Results}} \\
+  \multicolumn{3}{l}{\textbf{Test Results}} \\
   \midrule
-  T5 fine-tuned (hidden leaderboard) & \textit{Gradescope} & \textit{Gradescope} & \textit{Gradescope} \\
+  T5 fine-tuned & \multicolumn{2}{c}{25/25 on Gradescope ($\geq$ 65 F1)} \\
   \bottomrule
 \end{tabular}
 \caption{Development and test results.}
@@ -140,6 +140,7 @@ batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation
 \end{table}
 
 \paragraph{Qualitative Error Analysis}
+The following error analysis is for the fine-tuned T5 model (the only model trained, as no extra-credit from-scratch model was attempted).
 \begin{table}[h!]
   \centering
   \begin{tabular}{p{2cm}p{3cm}p{5cm}p{3cm}}
