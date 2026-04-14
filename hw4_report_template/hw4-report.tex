@@ -128,7 +128,7 @@ batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation
   \midrule
   \multicolumn{3}{l}{\textbf{Dev Results}} \\
   \midrule
-  T5 fine-tuned (best epoch) & 1.07 & 43.16 \\
+  T5 fine-tuned (best epoch) & 1.93 & 73.81 \\
   \bottomrule
 \end{tabular}
 \caption{Development and test results.}
@@ -143,11 +143,11 @@ The following error analysis is for the fine-tuned T5 model (the only model trai
     \toprule
     \textbf{Error Type} & \textbf{Example} & \textbf{Description} & \textbf{Statistics} \\
     \midrule
-    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 127/466 (27.25\%) \\
+    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 56/466 (12.02\%) \\
     \midrule
-    Timeout & complex/looping query & Generated query takes too long to execute, often due to redundant joins or Cartesian products. & 33/466 (7.08\%) \\
+    Timeout & complex/looping query & Generated query takes too long to execute, often due to redundant joins or Cartesian products. & 8/466 (1.72\%) \\
     \midrule
-    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 160/466 (34.33\%) \\
+    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 83/466 (17.81\%) \\
     \bottomrule
   \end{tabular}
   \caption{Representative error categories on the dev set.}
