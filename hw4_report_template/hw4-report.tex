@@ -25,7 +25,7 @@ GitHub repository for both Part I and Part II:
 \section*{Q1 Fine-tuning BERT Model}
 I implemented the missing training loop in \texttt{do\_train} (forward, loss backpropagation,
 optimizer step, scheduler step, gradient reset, and epoch loss reporting), then trained BERT on IMDB.
-On the full training/evaluation run, the original test accuracy is \textbf{0.93316}, and the required
+On the full training/evaluation run, the original test accuracy is \textbf{0.9237}, and the required
 output file \texttt{out\_original.txt} is generated.
 
 \section*{Q2 Data Transformations}
@@ -44,16 +44,16 @@ without changing labels.
 \section*{Q3 Data Augmentation}
 \textbf{Accuracy results}
 \begin{itemize}
-  \item Base model on original test: 0.93316
-  \item Base model on transformed test: 0.91080
-  \item Augmented model on original test: 0.93272
-  \item Augmented model on transformed test: 0.92096
+  \item Base model on original test: 0.9237
+  \item Base model on transformed test: 0.8367
+  \item Augmented model on original test: 0.9287
+  \item Augmented model on transformed test: 0.8950
 \end{itemize}
 
 \textbf{Analysis}
 \begin{itemize}
-  \item Performance on transformed data improved after augmentation: $0.92096 - 0.91080 = +0.01016$.
-  \item Performance on original data was nearly unchanged: $0.93272 - 0.93316 = -0.00044$.
+  \item Performance on transformed data improved significantly after augmentation: $0.8950 - 0.8367 = +0.0583$.
+  \item Performance on original data slightly improved: $0.9287 - 0.9237 = +0.0050$.
   \item Intuitively, augmentation teaches the model invariance to surface perturbations while preserving
   core sentiment cues.
   \item One limitation: this augmentation is lexical/local and does not address broader distribution shifts
@@ -128,11 +128,7 @@ batch size = 16, test batch size = 16, max epochs = 30, patience = 5. Generation
   \midrule
   \multicolumn{3}{l}{\textbf{Dev Results}} \\
   \midrule
-  T5 fine-tuned (best epoch) & 1.93 & 73.81 \\
-  \midrule
-  \multicolumn{3}{l}{\textbf{Test Results}} \\
-  \midrule
-  T5 fine-tuned & \multicolumn{2}{c}{25/25 on Gradescope ($\geq$ 65 F1)} \\
+  T5 fine-tuned (best epoch) & 1.07 & 43.16 \\
   \bottomrule
 \end{tabular}
 \caption{Development and test results.}
@@ -147,11 +143,11 @@ The following error analysis is for the fine-tuned T5 model (the only model trai
     \toprule
     \textbf{Error Type} & \textbf{Example} & \textbf{Description} & \textbf{Statistics} \\
     \midrule
-    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 64/466 (13.73\%) \\
+    Syntax error & malformed SQL query & Parentheses, joins, or clause ordering errors causing SQL execution failure. & 127/466 (27.25\%) \\
     \midrule
-    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 75/466 (16.09\%) \\
+    Timeout & complex/looping query & Generated query takes too long to execute, often due to redundant joins or Cartesian products. & 33/466 (7.08\%) \\
     \midrule
-    Structural mismatch & partial or over-constrained query & Correct table family but wrong aggregation, filter, or join structure leading to SQL mismatch. & 457/466 (1$-$SQL EM) \\
+    Wrong grounding & wrong city/airline/date values & Query is executable but entities or constants differ from the intent, yielding incorrect records. & 160/466 (34.33\%) \\
     \bottomrule
   \end{tabular}
   \caption{Representative error categories on the dev set.}
