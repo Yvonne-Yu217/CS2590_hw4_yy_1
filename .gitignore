@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+checkpoints/
+backup_results/
+backup_results_v2/
+*.pt
+*.safetensors
+*.bin
